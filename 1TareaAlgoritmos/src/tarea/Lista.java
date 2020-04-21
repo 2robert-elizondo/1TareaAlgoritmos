@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -40,6 +44,187 @@ public class Lista {
     public void setUltimo(Nodo ultimo) {
         this.ultimo = ultimo;
     }
+    
+    public void agregarPersona(Persona persona){
+        Nodo nuevo = new Nodo();
+        nuevo.setPersona(persona);
+        if(primero == null)
+            primero = ultimo = nuevo;
+        else{
+        ultimo.setSiguiente(nuevo);
+        ultimo = nuevo;
+        }
+            
+    }
+    
+    public String imprimirDelante(){
+        String txt = "";
+        Nodo actual = primero;
+        while(actual != null){
+            txt += actual.getPersona().toString() + "\n";
+            actual = actual.getSiguiente();
+        }
+        return txt;
+    }
+            
+    public String imprimirAtras(){
+        String txt = "";
+        Nodo actual = ultimo;
+        while(actual != null){
+            txt += actual.getPersona().toString() + "\n";
+            actual = actual.getAnterior();
+        }
+        return txt;
+    }
+    
+    public String consultaCedula(int cedula) throws ExcepcionGeneral{
+        Persona personaAuxiliar;
+        String txt = "La persona buscada no existe en la lista.";
+        int CEDULA_MAXIMA = 999999999;
+        int CEDULA_MINIMA = 000000000;
+        if(cedula < CEDULA_MINIMA || cedula > CEDULA_MAXIMA)
+            throw new ExcepcionGeneral("La cedula es invalida");
+        if(primero == null)
+            throw new ExcepcionGeneral("La lista esta vacia");
+        
+        Nodo actual = primero;
+
+        while(actual != null){
+            personaAuxiliar = actual.getPersona();
+            if(personaAuxiliar.getCedula() == cedula){
+                return actual.getPersona().toString();
+            }
+            actual = actual.getSiguiente();
+        }
+        return txt;
+    }
+    public String consultaApellido(String apellido) throws ExcepcionGeneral{
+        Persona personaAuxiliar;
+        String txt = "";
+        Nodo actual = primero;
+
+        while(actual != null){
+            personaAuxiliar = actual.getPersona();
+            if(personaAuxiliar.getApellido().equalsIgnoreCase(apellido)){
+                txt += "\n" +  actual.getPersona().toString();
+            }
+            actual = actual.getSiguiente();
+        }
+        if(txt.equals(""))
+            txt = "El apellido " + apellido + " no existe en la lista.";
+        return txt;
+    }
+    
+    public String eliminarCedula(int cedula) throws ExcepcionGeneral{
+        Persona personaAuxiliar;
+        String txt = "La persona buscada no existe en la lista.";
+        int CEDULA_MAXIMA = 999999999;
+        int CEDULA_MINIMA = 000000000;
+        if(cedula < CEDULA_MINIMA || cedula > CEDULA_MAXIMA)
+            throw new ExcepcionGeneral("La cedula es invalida");
+        if(primero == null)
+            throw new ExcepcionGeneral("La lista esta vacia");
+      
+        if(primero.getPersona().getCedula() == cedula){
+            personaAuxiliar = primero.getPersona();
+            if(primero == ultimo)
+                primero = null;
+            else{
+                primero.getSiguiente().setAnterior(null);
+                primero = primero.getSiguiente();
+            }
+            return personaAuxiliar.toString();
+        }
+        
+        Nodo actual = primero;
+        while(actual.getSiguiente() != null){
+            personaAuxiliar = actual.getSiguiente().getPersona();
+            if(personaAuxiliar.getCedula() == cedula){
+                txt = personaAuxiliar.toString();
+                actual.getSiguiente().getSiguiente().setAnterior(actual);
+                actual.setSiguiente(actual.getSiguiente().getSiguiente());
+                return txt;
+            }
+            actual = actual.getSiguiente();
+        }
+        if(actual == ultimo){
+            if(actual.getPersona().getCedula() == cedula){
+                txt = actual.getPersona().toString();
+                ultimo = null;
+                return txt;
+            }
+        }
+        return txt;
+    }
+            
+    
+    public String eliminarApellido(String apellido) throws ExcepcionGeneral{
+        Persona personaAuxiliar;
+        String txt = "";
+
+        if(primero.getPersona().getApellido().equalsIgnoreCase(apellido)){
+            personaAuxiliar = primero.getPersona();
+            if(primero == ultimo)
+                primero = null;
+            else{
+                primero.getSiguiente().setAnterior(null);
+                primero = primero.getSiguiente();
+            }
+            txt = personaAuxiliar.toString();
+        }
+        
+        Nodo actual = primero;
+        while(actual != null && actual.getSiguiente() != null){
+            personaAuxiliar = actual.getSiguiente().getPersona();
+            if(personaAuxiliar.getApellido().equalsIgnoreCase(apellido)){
+                if(txt.equals("")){
+                    txt = personaAuxiliar.toString();
+                    actual.getSiguiente().getSiguiente().setAnterior(actual);
+                    actual.setSiguiente(actual.getSiguiente().getSiguiente());
+                }
+                else{
+                txt += personaAuxiliar.toString();
+                actual.getSiguiente().getSiguiente().setAnterior(actual);
+                actual.setSiguiente(actual.getSiguiente().getSiguiente());
+                
+                }
+            }
+            actual = actual.getSiguiente();
+        }
+        if(actual == ultimo){
+            if(actual != null && actual.getPersona().getApellido().equalsIgnoreCase(apellido)){
+                txt += actual.getPersona().toString();
+                ultimo = null;
+                return txt;
+            }
+        }
+        if(txt.equals(""))
+            txt = "El apellido " + apellido + " no existe en la lista.";
+        return txt;
+    }
+    
+    public double calculoPromedioEdad() throws ExcepcionGeneral{
+        if(primero == null)
+            throw new ExcepcionGeneral("La lista esta vacia");
+        double promedioTotal = -1;
+        Nodo actual = primero;
+        Persona persona;
+        ArrayList<Integer> edades = new ArrayList<>();
+        while(actual != null){
+            persona = actual.getPersona();
+            edades.add(persona.getEdad());
+            actual = actual.getSiguiente();
+        }
+            
+        if(!edades.isEmpty()){
+            promedioTotal = 0;
+            for (Integer edad : edades) {
+                promedioTotal += edad;
+            }
+            promedioTotal = promedioTotal / edades.size();
+        }
+         return promedioTotal;   
+    }
 
     public void solicitarArchivo() throws ExcepcionGeneral{
         JFileChooser fc = new JFileChooser();
@@ -53,6 +238,7 @@ public class Lista {
                  String lineaLeida;
                  
                 while((lineaLeida = bf.readLine()) != null){
+                    System.out.println("La linea leida dice: " + lineaLeida);
                     String[] datosPersona = lineaLeida.split(",");
                     Persona personaAux = new Persona();
                     
@@ -64,6 +250,8 @@ public class Lista {
                         switch(i){
                             
                             case 0:
+                                System.out.println("length: " + info.length());
+                                System.out.println("cedula:" + info);
                                 if(info.length() != 9)
                                     throw new ExcepcionGeneral("Existe un valor"
                                             + " invalido en la cedula");
@@ -150,140 +338,6 @@ public class Lista {
         
     }
     
-    public String consultaCedula(int cedula) throws ExcepcionGeneral{
-        Persona personaAuxiliar;
-        String txt = "La persona buscada no existe en la lista.";
-        int CEDULA_MAXIMA = 999999999;
-        int CEDULA_MINIMA = 000000000;
-        if(cedula < CEDULA_MINIMA || cedula > CEDULA_MAXIMA)
-            throw new ExcepcionGeneral("La cedula es invalida");
-        if(primero == null)
-            throw new ExcepcionGeneral("La lista esta vacia");
         
-        Nodo actual = primero;
-
-        while(actual != null){
-            personaAuxiliar = actual.getPersona();
-            if(personaAuxiliar.getCedula() == cedula){
-                return actual.getPersona().toString();
-            }
-            actual = actual.getSiguiente();
-        }
-        return txt;
-    }
-    public String consultaApellido(String apellido) throws ExcepcionGeneral{
-        Persona personaAuxiliar;
-        String txt = "El apellido " + apellido + " no existe en la lista.";
-        Nodo actual = primero;
-
-        while(actual != null){
-            personaAuxiliar = actual.getPersona();
-            if(personaAuxiliar.getApellido().equalsIgnoreCase(apellido)){
-                txt += "\n" +  actual.getPersona().toString();
-            }
-            actual = actual.getSiguiente();
-        }
-        return txt;
-    }
-    
-    public String imprimirDelante(){
-        String txt = "";
-        Nodo actual = primero;
-        while(actual != null){
-            txt += actual.getPersona().toString() + "\n";
-            actual = actual.getSiguiente();
-        }
-        return txt;
-    }
-            
-    public String imprimirAtras(){
-        String txt = "";
-        Nodo actual = ultimo;
-        while(actual != null){
-            txt += actual.getPersona().toString() + "\n";
-            actual = actual.getAnterior();
-        }
-        return txt;
-    }
-    
-    public String eliminarCedula(int cedula) throws ExcepcionGeneral{
-        Persona personaAuxiliar;
-        Nodo auxiliar;
-        String txt = "La persona buscada no existe en la lista.";
-        int CEDULA_MAXIMA = 999999999;
-        int CEDULA_MINIMA = 000000000;
-        if(cedula < CEDULA_MINIMA || cedula > CEDULA_MAXIMA)
-            throw new ExcepcionGeneral("La cedula es invalida");
-        if(primero == null)
-            throw new ExcepcionGeneral("La lista esta vacia");
-      
-        if(primero.getPersona().getCedula() == cedula){
-            auxiliar = primero;
-            primero = null;
-            return auxiliar.getPersona().toString();
-        }
-        
-        Nodo actual = primero;
-        while(actual.getSiguiente() != null){
-            personaAuxiliar = actual.getSiguiente().getPersona();
-            if(personaAuxiliar.getCedula() == cedula){
-                txt = personaAuxiliar.toString();
-                actual.getSiguiente().getSiguiente().setAnterior(actual);
-                actual.setSiguiente(actual.getSiguiente().getSiguiente());
-                return txt;
-            }
-            actual = actual.getSiguiente();
-        }
-        if(actual == ultimo){
-            if(actual.getPersona().getCedula() == cedula){
-                txt = actual.getPersona().toString();
-                ultimo = null;
-                return txt;
-            }
-        }
-        return txt;
-    }
-            
-    
-    public String eliminarApellido(String apellido) throws ExcepcionGeneral{
-        Persona personaAuxiliar;
-        Nodo auxiliar;
-        String txt = "";
-
-        if(primero.getPersona().getApellido().equalsIgnoreCase(apellido)){
-            auxiliar = primero;
-            primero = null;
-            txt = auxiliar.getPersona().toString();
-        }
-        
-        Nodo actual = primero;
-        while(actual.getSiguiente() != null){
-            personaAuxiliar = actual.getSiguiente().getPersona();
-            if(personaAuxiliar.getApellido().equalsIgnoreCase(apellido)){
-                if(txt.equals("")){
-                    txt = personaAuxiliar.toString();
-                    actual.getSiguiente().getSiguiente().setAnterior(actual);
-                    actual.setSiguiente(actual.getSiguiente().getSiguiente());
-                }
-                else{
-                txt += personaAuxiliar.toString();
-                actual.getSiguiente().getSiguiente().setAnterior(actual);
-                actual.setSiguiente(actual.getSiguiente().getSiguiente());
-                
-                }
-            }
-            actual = actual.getSiguiente();
-        }
-        if(actual == ultimo){
-            if(actual.getPersona().getApellido().equalsIgnoreCase(apellido)){
-                txt += actual.getPersona().toString();
-                ultimo = null;
-                return txt;
-            }
-        }
-        if(txt.equals(""))
-            txt = "El apellido " + apellido + " no existe en la lista.";
-        return txt;
-    }
     
 }
